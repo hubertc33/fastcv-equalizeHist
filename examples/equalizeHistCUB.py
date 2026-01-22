@@ -3,7 +3,7 @@ import torch
 import fastcv
 
 
-img = cv2.imread("../artifacts/rekin.jpg", cv2.IMREAD_GRAYSCALE)
+img = cv2.imread("../artifacts/test.jpg", cv2.IMREAD_GRAYSCALE)
 img_tensor = torch.from_numpy(img).cuda()
 
 equalized_tensor = fastcv.equalizeHistCUB(img_tensor)

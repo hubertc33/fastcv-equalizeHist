@@ -31,7 +31,7 @@ __global__ void buildLUT_CUBSync(uint32_t* cdf, uint8_t* lut, int n) {
     lut[i] = (uint8_t)roundf((float)(cdf[i] - cdf_min) / (n - cdf_min) * 255.0);
 }
 
-void histogramCUBSync(uint8_t* d_img, uint32_t* d_histogram, int N, cudaStream_t stream) {
+void histogramCUBSync(uint8_t* d_img, uint32_t* d_histogram, int N) {
 
     int      num_levels = 257;
     float    lower_level = 0.0;
@@ -44,23 +44,21 @@ void histogramCUBSync(uint8_t* d_img, uint32_t* d_histogram, int N, cudaStream_t
     cub::DeviceHistogram::HistogramEven(
         d_temp_storage, temp_storage_bytes,
         d_img, d_histogram, num_levels,
-        lower_level, upper_level, N , stream);
+        lower_level, upper_level, N);
     cudaDeviceSynchronize();
 
-    // Allocate temporary storage
     cudaMalloc(&d_temp_storage, temp_storage_bytes);
 
-    // Compute histograms
     cub::DeviceHistogram::HistogramEven(
         d_temp_storage, temp_storage_bytes,
         d_img, d_histogram, num_levels,
-        lower_level, upper_level, N, stream);
+        lower_level, upper_level, N);
     cudaDeviceSynchronize();
 
     cudaFree(d_temp_storage);
 }
 
-void cdfCUBSync(uint32_t* d_histogram, uint32_t* d_cdf, cudaStream_t stream) {
+void cdfCUBSync(uint32_t* d_histogram, uint32_t* d_cdf) {
     int  num_items = 256;
 
     void* d_temp_storage = nullptr;
@@ -68,14 +66,14 @@ void cdfCUBSync(uint32_t* d_histogram, uint32_t* d_cdf, cudaStream_t stream) {
 
     cub::DeviceScan::InclusiveSum(
         d_temp_storage, temp_storage_bytes,
-        d_histogram, d_cdf, num_items,stream);
+        d_histogram, d_cdf, num_items);
     cudaDeviceSynchronize();
 
     cudaMalloc(&d_temp_storage, temp_storage_bytes);
 
     cub::DeviceScan::InclusiveSum(
         d_temp_storage, temp_storage_bytes,
-        d_histogram, d_cdf, num_items,stream);
+        d_histogram, d_cdf, num_items);
     cudaDeviceSynchronize();
 
     cudaFree(d_temp_storage);
@@ -94,27 +92,24 @@ torch::Tensor equalizeHistCUBSync(torch::Tensor img) {
     dim3 dimBlock = getOptimalBlockDim(width, height);
     dim3 dimGrid(cdiv(width, dimBlock.x), cdiv(height, dimBlock.y));
 
-    auto stream = at::cuda::getCurrentCUDAStream();
-
     auto result = torch::empty({height, width},torch::TensorOptions().dtype(torch::kByte).device(img.device()));
 
     auto hist = torch::zeros({256}, torch::dtype(torch::kInt32).device(img.device()));
     auto cdf = torch::empty({256}, torch::dtype(torch::kInt32).device(img.device()));
     auto lut = torch::empty({256}, torch::dtype(torch::kByte).device(img.device()));
 
-    histogramCUBSync(img.data_ptr<uint8_t>(), (uint32_t*)hist.data_ptr<int32_t>(), N, stream);
+    histogramCUBSync(img.data_ptr<uint8_t>(), (uint32_t*)hist.data_ptr<int32_t>(), N);
     cudaDeviceSynchronize();
 
-    cdfCUBSync((uint32_t*)hist.data_ptr<int32_t>(), (uint32_t*)cdf.data_ptr<int32_t>(), stream);
+    cdfCUBSync((uint32_t*)hist.data_ptr<int32_t>(), (uint32_t*)cdf.data_ptr<int32_t>());
     cudaDeviceSynchronize();
 
 
-    buildLUT_CUBSync<<<1, 256, 0, stream>>>((uint32_t*)cdf.data_ptr<int32_t>(), lut.data_ptr<uint8_t>(),N);
+    buildLUT_CUBSync<<<1, 256>>>((uint32_t*)cdf.data_ptr<int32_t>(), lut.data_ptr<uint8_t>(),N);
     cudaDeviceSynchronize();
 
-    LUT_CUBSync<<<dimGrid, dimBlock, 0, stream>>>(img.data_ptr<uint8_t>(), result.data_ptr<uint8_t>(), lut.data_ptr<uint8_t>(),width,height);
+    LUT_CUBSync<<<dimGrid, dimBlock>>>(img.data_ptr<uint8_t>(), result.data_ptr<uint8_t>(), lut.data_ptr<uint8_t>(),width,height);
     cudaDeviceSynchronize();
-
 
     C10_CUDA_KERNEL_LAUNCH_CHECK();
     return result;

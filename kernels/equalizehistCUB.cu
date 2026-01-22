@@ -47,10 +47,8 @@ void histogramCUB(uint8_t* d_img, uint32_t* d_histogram, int N, cudaStream_t str
         d_img, d_histogram, num_levels,
         lower_level, upper_level, N,stream);
 
-    // Allocate temporary storage
     cudaMalloc(&d_temp_storage, temp_storage_bytes);
 
-    // Compute histograms
     cub::DeviceHistogram::HistogramEven(
         d_temp_storage, temp_storage_bytes,
         d_img, d_histogram, num_levels,

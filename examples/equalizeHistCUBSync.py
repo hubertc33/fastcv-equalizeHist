@@ -8,6 +8,6 @@ img_tensor = torch.from_numpy(img).cuda()
 
 equalized_tensor = fastcv.equalizeHistCUBSync(img_tensor)
 equalized_image = equalized_tensor.cpu().numpy()
-cv2.imwrite("../result/output_equalizeHistCUBSync.jpg", equalized_image)
+cv2.imwrite("../result/output_equalizeHistThrust.jpg", equalized_image)
 
 print("saved equalized image.")

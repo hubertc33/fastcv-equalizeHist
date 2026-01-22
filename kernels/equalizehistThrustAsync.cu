@@ -89,8 +89,8 @@ torch::Tensor equalizeHistThrustAsync(torch::Tensor img) {
     uint8_t* lut_ptr = thrust::raw_pointer_cast(d_lut.data());
     uint32_t* cdf_ptr = thrust::raw_pointer_cast(d_cdf.data());
 
-    buildLUT_ThrustAsync<<<1, 256, 0 ,stream>>>(cdf_ptr, lut_ptr,N);
-    LUT_ThrustAsync<<<dimGrid, dimBlock, 0,stream>>>(img_ptr,result.data_ptr<uint8_t>(), lut_ptr,width,height);
+    buildLUT_ThrustAsync<<<1, 256, 0 , stream>>>(cdf_ptr, lut_ptr,N);
+    LUT_ThrustAsync<<<dimGrid, dimBlock, 0, stream>>>(img_ptr,result.data_ptr<uint8_t>(), lut_ptr,width,height);
 
     C10_CUDA_KERNEL_LAUNCH_CHECK();
     return result;

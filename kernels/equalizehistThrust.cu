@@ -79,16 +79,20 @@ torch::Tensor equalizeHistThrust(torch::Tensor img) {
     thrust::device_vector<uint8_t> d_lut(256);
 
     histogramDeviceThrust(d_img, d_histogram);
+    cudaDeviceSynchronize();
     d_cdf.resize(d_histogram.size());
 
     thrust::inclusive_scan(thrust::device,d_histogram.begin(), d_histogram.end(), d_cdf.begin());
+    cudaDeviceSynchronize();
 
     uint8_t* img_ptr = thrust::raw_pointer_cast(d_img.data());
     uint8_t* lut_ptr = thrust::raw_pointer_cast(d_lut.data());
     uint32_t* cdf_ptr = thrust::raw_pointer_cast(d_cdf.data());
 
     buildLUT_Thrust<<<1, 256>>>(cdf_ptr, lut_ptr,N);
+    cudaDeviceSynchronize();
     LUT_Thrust<<<dimGrid, dimBlock>>>(img_ptr,result.data_ptr<uint8_t>(), lut_ptr,width,height);
+    cudaDeviceSynchronize();
 
     C10_CUDA_KERNEL_LAUNCH_CHECK();
     return result;
