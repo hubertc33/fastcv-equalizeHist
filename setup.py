@@ -1,8 +1,6 @@
-import os
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
-# Ustawienia dla kompilatora C++ (pliki .cpp)
 cxx_args = ["/O2", "/std:c++17", "/permissive-"]
 
 nvcc_args = [
@@ -11,7 +9,6 @@ nvcc_args = [
     "-D__CUDA_NO_HALF_OPERATORS__",
     "-D__CUDA_NO_HALF_CONVERSIONS__",
     "-D__CUDA_NO_HALF2_OPERATORS__",
-    # Przekazanie flag do host compiler (MSVC):
     "-Xcompiler", "/std:c++17",
     "-Xcompiler", "/permissive-",
 ]
@@ -28,8 +25,8 @@ setup(
                 "kernels/dilation.cu",
                 "kernels/erosion.cu",
                 "kernels/equalizehistCUB.cu",
-                #"kernels/equalizehistThrust.cu",
-                #"kernels/equalizehistThrustAsync.cu",
+                "kernels/equalizehistThrust.cu",
+                "kernels/equalizehistThrustAsync.cu",
                 "kernels/equalizehistCUBSync.cu",
                 "kernels/module.cpp"
             ],
