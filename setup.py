@@ -1,5 +1,20 @@
+import os
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+
+# Ustawienia dla kompilatora C++ (pliki .cpp)
+cxx_args = ["/O2", "/std:c++17", "/permissive-"]
+
+nvcc_args = [
+    "-O2",
+    "-std=c++17",
+    "-D__CUDA_NO_HALF_OPERATORS__",
+    "-D__CUDA_NO_HALF_CONVERSIONS__",
+    "-D__CUDA_NO_HALF2_OPERATORS__",
+    # Przekazanie flag do host compiler (MSVC):
+    "-Xcompiler", "/std:c++17",
+    "-Xcompiler", "/permissive-",
+]
 
 setup(
     name="fastcv",
@@ -12,13 +27,16 @@ setup(
                 "kernels/sobel.cu",
                 "kernels/dilation.cu",
                 "kernels/erosion.cu",
-                "kernels/module.cpp",
                 "kernels/equalizehistCUB.cu",
-                "kernels/equalizehistThrust.cu",
-                "kernels/equalizehistThrustAsync.cu",
+                #"kernels/equalizehistThrust.cu",
+                #"kernels/equalizehistThrustAsync.cu",
                 "kernels/equalizehistCUBSync.cu",
+                "kernels/module.cpp"
             ],
-            extra_compile_args={"cxx": ["-O2"]},
+            extra_compile_args={
+                "cxx": cxx_args,
+                "nvcc": nvcc_args,
+            },
         ),
     ],
     cmdclass={"build_ext": BuildExtension},
