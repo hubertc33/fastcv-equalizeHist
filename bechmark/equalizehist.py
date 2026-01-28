@@ -6,7 +6,7 @@ import fastcv
 import numpy as np
 
 
-def benchmark_equalizeHistCUB(sizes=[1024, 2048, 4096], runs=50):
+def benchmark_equalizeHist(sizes=[1024, 2048, 4096], runs=50):
     results = []
 
     for size in sizes:
@@ -24,7 +24,7 @@ def benchmark_equalizeHistCUB(sizes=[1024, 2048, 4096], runs=50):
         torch.cuda.synchronize()
         start = time.perf_counter()
         for _ in range(runs):
-            _ = fastcv.equalizeHistCUB(img_torch)
+            _ = fastcv.equalizehist(img_torch)
         torch.cuda.synchronize()
         end = time.perf_counter()
         fc_time = (end - start) / runs * 1000  # ms per run
@@ -36,7 +36,7 @@ def benchmark_equalizeHistCUB(sizes=[1024, 2048, 4096], runs=50):
 
 
 if __name__ == "__main__":
-    results = benchmark_equalizeHistCUB()
+    results = benchmark_equalizeHist()
     print("\n=== Final Results ===")
     print("Size\t\tOpenCV (CPU)\tfastcv (CUDA)")
     for size, cv_time, fc_time in results:

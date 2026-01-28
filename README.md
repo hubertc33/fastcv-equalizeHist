@@ -7,7 +7,7 @@
 1. Clone the repo
 
 ```bash
-https://github.com/JINO-ROHIT/fastcv
+https://github.com/hubertc33/fastcv-equalizeHist
 ```
 
 2. Move to fastcv
@@ -16,7 +16,14 @@ https://github.com/JINO-ROHIT/fastcv
 cd fastcv
 ```
 
-3. Build the package
+4. Install required libraries
+
+```bash
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+pip install ninja opencv-python wheel
+```
+
+4. Build the package
 
 ```bash
 pip install -e . --no-build-isolation
@@ -39,3 +46,9 @@ Tested on: **RTX 4060 Ti**
 | SOBEL       | 4096×4096  | 384.83 ms    | 0.3223 ms     | -                           | 1194.0      |
 | EROSION     | 4096×4096  | 2.9758 ms    | 0.5827 ms     | -                           | 5.11        |
 | DILATION    | 4096×4096  | 2.7539 ms    | 0.5856 ms     | -                           | 4.70        |
+
+Tested on: **RTX 4070 Ti Super**
+
+| Kernel       | Image Size | OpenCV (CPU) | fastcv (CUDA) | OpenCV CUDA  (soon) | Speedup (×) |
+|--------------|-----------:|-------------:|--------------:|--------------------:|------------:|
+| EQUALIZEHIST | 4096×4096  | 5.4739 ms    | 0.8072 ms   |                   - |        6.78 |

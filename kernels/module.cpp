@@ -6,10 +6,8 @@ torch::Tensor box_blur(torch::Tensor img, int blurSize);
 torch::Tensor sobel(torch::Tensor img);
 torch::Tensor dilation(torch::Tensor img, int filterSize);
 torch::Tensor erosion(torch::Tensor img, int filterSize);
-torch::Tensor equalizeHistCUB(torch::Tensor img);
-torch::Tensor equalizeHistCUBSync(torch::Tensor img);
-torch::Tensor equalizeHistThrust(torch::Tensor img);
-torch::Tensor equalizeHistThrustAsync(torch::Tensor img);
+torch::Tensor equalizeHist(torch::Tensor img);
+
 
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m){
@@ -18,8 +16,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m){
     m.def("sobel", &sobel, "sobel filter kernel");
     m.def("dilate", &dilation, "dilation kernel");
     m.def("erode", &erosion, "erosion kernel");
-    m.def("equalizeHistCUB", &equalizeHistCUB, "equalizehist kernel using CUB");
-    m.def("equalizeHistThrust", &equalizeHistThrust, "equalizehist kernel using Thrust");
-    m.def("equalizeHistCUBSync", &equalizeHistCUBSync, "equalizehist kernel using CUB synchronic version");
-    m.def("equalizeHistThrustAsync", &equalizeHistThrustAsync, "equalizehist kernel using Thrust asynchronic version");
+    m.def("equalizehist", &equalizeHist, "equalizehist kernel");
+
 }

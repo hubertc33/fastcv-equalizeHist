@@ -13,6 +13,7 @@ nvcc_args = [
     "-Xcompiler", "/permissive-",
 ]
 
+
 setup(
     name="fastcv",
     ext_modules=[
@@ -24,11 +25,8 @@ setup(
                 "kernels/sobel.cu",
                 "kernels/dilation.cu",
                 "kernels/erosion.cu",
-                "kernels/equalizehistCUB.cu",
-                "kernels/equalizehistThrust.cu",
-                "kernels/equalizehistThrustAsync.cu",
-                "kernels/equalizehistCUBSync.cu",
-                "kernels/module.cpp"
+                "kernels/equalizehist.cu",
+                "kernels/module.cpp",
             ],
             extra_compile_args={
                 "cxx": cxx_args,
