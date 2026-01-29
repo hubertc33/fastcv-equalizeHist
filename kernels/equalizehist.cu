@@ -96,19 +96,19 @@ torch::Tensor equalizeHist(torch::Tensor img) {
 
     auto result = torch::empty({height, width},torch::TensorOptions().dtype(torch::kByte).device(img.device()));
 
-    auto hist = torch::zeros({256}, torch::TensorOptions().dtype(torch::kInt32).device(img.device()));
-    auto cdf = torch::empty({256}, torch::TensorOptions().dtype(torch::kInt32).device(img.device()));
+    auto hist = torch::zeros({256}, torch::TensorOptions().dtype(torch::kUInt32).device(img.device()));
+    auto cdf = torch::empty({256}, torch::TensorOptions().dtype(torch::kUInt32).device(img.device()));
     auto lut = torch::empty({256}, torch::TensorOptions().dtype(torch::kByte).device(img.device()));
 
     nvtxRangePush("Stworzenie histogramu");
-    histogram(img.data_ptr<uint8_t>(), (uint32_t*)hist.data_ptr<int32_t>(), N, stream);
+    histogram(img.data_ptr<uint8_t>(), hist.data_ptr<uint32_t>(), N, stream);
     nvtxRangePop();
     nvtxRangePush("Obliczenie CDF");
-    CDF((uint32_t*)hist.data_ptr<int32_t>(), (uint32_t*)cdf.data_ptr<int32_t>(), stream);
+    CDF(hist.data_ptr<uint32_t>(), cdf.data_ptr<uint32_t>(), stream);
     nvtxRangePop();
     nvtxRangePush("Wywolanie kerneli");
 
-    buildLUT<<<1, 256, 0, stream>>>((uint32_t*)cdf.data_ptr<int32_t>(), lut.data_ptr<uint8_t>(),N);
+    buildLUT<<<1, 256, 0, stream>>>(cdf.data_ptr<uint32_t>(), lut.data_ptr<uint8_t>(),N);
     LUT<<<dimGrid, dimBlock, 0, stream>>>(img.data_ptr<uint8_t>(), result.data_ptr<uint8_t>(), lut.data_ptr<uint8_t>(),width,height);
 
     nvtxRangePop();
